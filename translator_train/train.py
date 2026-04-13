@@ -4,7 +4,7 @@ import torch
 from configs import *
 from datasets import load_dataset
 from transformers import AutoModelForCausalLM, AutoTokenizer
-from trl import SFTConfig, SFTTrainer, setup_chat_format
+from trl import SFTConfig, SFTTrainer #, setup_chat_format
 from utils import format_to_chat
 from dotenv import load_dotenv
 
@@ -19,8 +19,8 @@ if __name__ == "__main__":
     model = AutoModelForCausalLM.from_pretrained(MODEL_ID, device_map="auto")
 
     logger.info("Tokenizer setup chat template...")
-    if tokenizer.chat_template is None:
-        model, tokenizer = setup_chat_format(model, tokenizer)
+    #if tokenizer.chat_template is None:
+    #    model, tokenizer = setup_chat_format(model, tokenizer)
 
     logger.info("Load dataset...")
     dataset = load_dataset(DATASET_REPO, split=DATASET_CONFIG)
