@@ -1,0 +1,7 @@
+transformers
+trl
+trackio
+accelerate 
+bitsandbytes
+huggingface_hub
+datasets
