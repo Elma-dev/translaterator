@@ -5,3 +5,5 @@ accelerate
 bitsandbytes
 huggingface_hub
 datasets
+sacrebleu
+nvitop
