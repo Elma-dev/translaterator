@@ -49,11 +49,18 @@ if __name__ == "__main__":
 
     logger.info("Build compute_metrics...")
 
+    def preprocess_logits_for_metrics(logits, labels):
+        """
+        Argmax the logits on the GPU to save memory.
+        Instead of [batch_size, seq_len, vocab_size], we store [batch_size, seq_len].
+        """
+        if isinstance(logits, tuple):
+            logits = logits[0]
+        return logits.argmax(dim=-1)
+
     def compute_metrics(eval_pred):
-        """Compute chrF and BLEU from teacher-forced predictions."""
-        logits, labels = eval_pred
-        # Argmax over vocab dim to get predicted token ids
-        predictions = np.argmax(logits, axis=-1)
+        """Compute chrF and BLEU from token IDs."""
+        predictions, labels = eval_pred
 
         decoded_preds, decoded_labels = [], []
         for pred_ids, label_ids in zip(predictions, labels):
@@ -80,6 +87,7 @@ if __name__ == "__main__":
         output_dir=OUTPUT_DIR,
         num_train_epochs=NUM_TRAIN_EPOCHS,
         per_device_train_batch_size=PER_DEVICE_TRAIN_BATCH_SIZE,
+        per_device_eval_batch_size=PER_DEVICE_EVAL_BATCH_SIZE,
         gradient_accumulation_steps=GRADIENT_ACCUMULATION_BATCH_SIZE,
         gradient_checkpointing=True,  # Changed to False
         learning_rate=LEARNING_RATE,  # Curriculum Learning
@@ -102,6 +110,7 @@ if __name__ == "__main__":
         packing=PACKING,
         report_to=REPORT_TO,  # noqa: F405
         run_name=RUN_NAME,
+        eval_accumulation_steps=10,  # Move logits to CPU every 10 steps
     )
 
     logger.info("Prepare Trainer...")
@@ -112,6 +121,7 @@ if __name__ == "__main__":
         args=sft_config,
         processing_class=tokenizer,
         compute_metrics=compute_metrics,
+        preprocess_logits_for_metrics=preprocess_logits_for_metrics,
     )
 
     logger.info("Start training...")
