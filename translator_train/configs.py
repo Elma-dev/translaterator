@@ -1,8 +1,7 @@
-MODEL_ID = "LiquidAI/LFM2.5-1.2B-Instruct"
-OUTPUT_MODEL_ID = "abdeljalilELmajjodi/darija_translator_54k"
-DATASET_REPO = "abdeljalilELmajjodi/darija_english_54k_clean"
+MODEL_ID = "LiquidAI/LFM2.5-350M"
+DATASET_REPO = "abdeljalilELmajjodi/darija_english_translation_new"
 DATASET_CONFIG = "train"
-OUTPUT_DIR = "LFM_2.5_Translator"
+OUTPUT_DIR = "LFM_2.5_350_Translator"
 NUM_TRAIN_EPOCHS = 1
 PER_DEVICE_TRAIN_BATCH_SIZE = 1
 GRADIENT_ACCUMULATION_BATCH_SIZE = 16
@@ -15,6 +14,11 @@ LOGGING_STEPS = 10
 SAVE_STRATEGY = "steps"
 SAVE_STEPS = 1000
 SAVE_TOTAL_LIMIT = 2
+
+
+OUTPUT_MODEL_ID = (
+    f"abdeljalilELmajjodi/translator_{LEARNING_RATE}_{PER_DEVICE_TRAIN_BATCH_SIZE}"
+)
 
 PUSH_TO_HUB = False
 # hub_model_id=OUTPUT_MODEL_ID,
