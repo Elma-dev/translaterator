@@ -20,3 +20,4 @@ W_DECAY = 0.02
 RUN_NAME = f"{MODEL_ID.split('/')[-1]}-lr{LEARNING_RATE}-bs{TRAIN_BATCH_SIZE}-{datetime.now().strftime('%m%d-%H%M')}"
 SAVE_STEPS = 100
 SAVE_TOTAL_LIMIT = 2
+DEVICE = "cuda"

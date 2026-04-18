@@ -1,3 +1,24 @@
+from configs import DARIJA_COLUMN
+from configs import MAX_LENGTH
+from configs import ENGLISH_COLUMN
+from configs import SAVE_TOTAL_LIMIT
+from configs import SAVE_STEPS
+from configs import RUN_NAME
+from configs import W_DECAY
+from configs import LEARNING_RATE
+from configs import EVAL_STEPS
+from configs import LOG_STEPS
+from configs import TEST_BATCH_SIZE
+from configs import TRAIN_BATCH_SIZE
+from configs import OUTPUT_DIR
+from configs import TEST_SIZE
+from configs import DATASET_SPLIT
+from configs import DATASET_ID
+from configs import FREEZE_ENCODER
+from configs import SRC_LANG
+from configs import TGT_LANG
+from configs import MODEL_ID
+from configs import DEVICE
 from transformers import (
     AutoModelForSeq2Seq,
     AutoTokenizer,
@@ -29,7 +50,7 @@ def tokenize_dataset(dataset, tokenizer):
 
 
 if __name__ == "__main__":
-    model = AutoModelForSeq2Seq.from_pretrained(MODEL_ID)
+    model = AutoModelForSeq2Seq.from_pretrained(MODEL_ID, device_map=DEVICE)
     tokenizer = AutoTokenizer.from_pretrained(
         MODEL_ID, src_lang=SRC_LANG, tgt_lang=TGT_LANG
     )
