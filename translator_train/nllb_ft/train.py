@@ -1,26 +1,6 @@
-from configs import DARIJA_COLUMN
-from configs import MAX_LENGTH
-from configs import ENGLISH_COLUMN
-from configs import SAVE_TOTAL_LIMIT
-from configs import SAVE_STEPS
-from configs import RUN_NAME
-from configs import W_DECAY
-from configs import LEARNING_RATE
-from configs import EVAL_STEPS
-from configs import LOG_STEPS
-from configs import TEST_BATCH_SIZE
-from configs import TRAIN_BATCH_SIZE
-from configs import OUTPUT_DIR
-from configs import TEST_SIZE
-from configs import DATASET_SPLIT
-from configs import DATASET_ID
-from configs import FREEZE_ENCODER
-from configs import SRC_LANG
-from configs import TGT_LANG
-from configs import MODEL_ID
-from configs import DEVICE
+import logging
 from transformers import (
-    AutoModelForSeq2Seq,
+    AutoModelForSeq2SeqLM,
     AutoTokenizer,
     Seq2SeqTrainingArguments,
     Seq2SeqTrainer,
@@ -29,17 +9,29 @@ from transformers import (
 from datasets import load_dataset, Dataset
 from configs import *
 
+# Setup logging
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    handlers=[logging.StreamHandler()],
+)
+logger = logging.getLogger(__name__)
 
-def tokenize_dataset(dataset, tokenizer):
+
+def tokenize_dataset(dataset_obj, tokenizer):
+    logger.info(f"Tokenizing dataset with {len(dataset_obj)} examples...")
     english_token_ids = tokenizer(
-        dataset[ENGLISH_COLUMN], padding=True, truncation=True, max_length=MAX_LENGTH
+        dataset_obj[ENGLISH_COLUMN],
+        padding=True,
+        truncation=True,
+        max_length=MAX_LENGTH,
     )
 
     darija_token_ids = tokenizer(
-        dataset[DARIJA_COLUMN], padding=True, truncation=True, max_length=MAX_LENGTH
+        dataset_obj[DARIJA_COLUMN], padding=True, truncation=True, max_length=MAX_LENGTH
     )
 
-    final_dataset = Dataset.from_list(
+    final_dataset = Dataset.from_dict(
         {
             "input_ids": english_token_ids["input_ids"],
             "attention_mask": english_token_ids["attention_mask"],
@@ -50,28 +42,37 @@ def tokenize_dataset(dataset, tokenizer):
 
 
 if __name__ == "__main__":
-    model = AutoModelForSeq2Seq.from_pretrained(MODEL_ID, device_map=DEVICE)
+    logger.info(f"Loading model and tokenizer: {MODEL_ID}")
+    model = AutoModelForSeq2SeqLM.from_pretrained(MODEL_ID, device_map=DEVICE)
     tokenizer = AutoTokenizer.from_pretrained(
         MODEL_ID, src_lang=SRC_LANG, tgt_lang=TGT_LANG
     )
 
     # freeze encoder
     if FREEZE_ENCODER:
-        for params in model.model.encode.parameters():
+        logger.info("Freezing encoder parameters...")
+        # NLLB/M2M100 models have 'model.encoder'
+        for params in model.get_encoder().parameters():
             params.requires_grad = False
 
     # load dataset
+    logger.info(f"Loading dataset: {DATASET_ID} (split: {DATASET_SPLIT})")
     dataset = load_dataset(DATASET_ID, split=DATASET_SPLIT)
+
+    logger.info(f"Splitting dataset (test_size={TEST_SIZE})...")
     dataset_split = dataset.train_test_split(test_size=TEST_SIZE, seed=42)
-    test, train = dataset_split["test"], dataset_split["train"]
-    test = tokenize_dataset(test, tokenizer)
-    train = tokenize_dataset(train, tokenizer)
+    test_raw, train_raw = dataset_split["test"], dataset_split["train"]
+
+    logger.info("Preparing tokenized datasets...")
+    test = tokenize_dataset(test_raw, tokenizer)
+    train = tokenize_dataset(train_raw, tokenizer)
 
     # prepare Trainer
+    logger.info("Setting up Seq2SeqTrainingArguments...")
     training_args = Seq2SeqTrainingArguments(
         output_dir=OUTPUT_DIR,
-        per_device_train_batch=TRAIN_BATCH_SIZE,
-        per_device_eval_batch=TEST_BATCH_SIZE,
+        per_device_train_batch_size=TRAIN_BATCH_SIZE,
+        per_device_eval_batch_size=TEST_BATCH_SIZE,
         logging_steps=LOG_STEPS,
         evaluation_strategy="steps",
         eval_steps=EVAL_STEPS,
@@ -85,6 +86,7 @@ if __name__ == "__main__":
         save_total_limit=SAVE_TOTAL_LIMIT,
     )
 
+    logger.info("Initializing trainer...")
     trainer = Seq2SeqTrainer(
         model=model,
         tokenizer=tokenizer,
@@ -93,3 +95,8 @@ if __name__ == "__main__":
         eval_dataset=test,
         data_collator=DataCollatorWithPadding(tokenizer=tokenizer),
     )
+
+    logger.info("Starting training...")
+    trainer.train()
+
+    logger.info("Training complete.")
