@@ -20,28 +20,32 @@ logger = logging.getLogger(__name__)
 
 def tokenize_dataset(dataset_obj, tokenizer):
     logger.info(f"Tokenizing dataset with {len(dataset_obj)} examples...")
-    english_token_ids = tokenizer(
-        dataset_obj[ENGLISH_COLUMN][:],
-        padding=True,
-        truncation=True,
-        max_length=MAX_LENGTH,
-    )
 
-    darija_token_ids = tokenizer(
-        dataset_obj[DARIJA_COLUMN][:],
-        padding=True,
-        truncation=True,
-        max_length=MAX_LENGTH,
-    )
+    def preprocess_function(examples):
+        # Tokenize inputs
+        model_inputs = tokenizer(
+            examples[ENGLISH_COLUMN],
+            max_length=MAX_LENGTH or 300,  # Default to 128 if MAX_LENGTH is None
+            truncation=True,
+        )
 
-    final_dataset = Dataset.from_dict(
-        {
-            "input_ids": english_token_ids["input_ids"],
-            "attention_mask": english_token_ids["attention_mask"],
-            "labels": darija_token_ids["input_ids"],
-        }
+        # Tokenize targets
+        labels = tokenizer(
+            text_target=examples[DARIJA_COLUMN],
+            max_length=MAX_LENGTH or 128,
+            truncation=True,
+        )
+
+        model_inputs["labels"] = labels["input_ids"]
+        return model_inputs
+
+    tokenized_dataset = dataset_obj.map(
+        preprocess_function,
+        batched=True,
+        remove_columns=dataset_obj.column_names,
+        desc="Running tokenizer on dataset",
     )
-    return final_dataset
+    return tokenized_dataset
 
 
 if __name__ == "__main__":
