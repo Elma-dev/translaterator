@@ -10,11 +10,11 @@ from datasets import load_dataset, Dataset
 from configs import *
 
 # Setup logging
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    handlers=[logging.StreamHandler()],
-)
+# logging.basicConfig(
+#     level=logging.INFO,
+#     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+#     handlers=[logging.StreamHandler()],
+# )
 logger = logging.getLogger(__name__)
 
 
