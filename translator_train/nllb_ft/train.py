@@ -21,14 +21,17 @@ logger = logging.getLogger(__name__)
 def tokenize_dataset(dataset_obj, tokenizer):
     logger.info(f"Tokenizing dataset with {len(dataset_obj)} examples...")
     english_token_ids = tokenizer(
-        dataset_obj[ENGLISH_COLUMN],
+        dataset_obj[ENGLISH_COLUMN].tolist(),
         padding=True,
         truncation=True,
         max_length=MAX_LENGTH,
     )
 
     darija_token_ids = tokenizer(
-        dataset_obj[DARIJA_COLUMN], padding=True, truncation=True, max_length=MAX_LENGTH
+        dataset_obj[DARIJA_COLUMN].tolist(),
+        padding=True,
+        truncation=True,
+        max_length=MAX_LENGTH,
     )
 
     final_dataset = Dataset.from_dict(
