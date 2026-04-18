@@ -81,7 +81,7 @@ if __name__ == "__main__":
         per_device_train_batch_size=TRAIN_BATCH_SIZE,
         per_device_eval_batch_size=TEST_BATCH_SIZE,
         logging_steps=LOG_STEPS,
-        evaluation_strategy="steps",
+        eval_strategy="steps",
         eval_steps=EVAL_STEPS,
         num_train_epochs=3,
         learning_rate=LEARNING_RATE,
