@@ -96,7 +96,7 @@ if __name__ == "__main__":
     logger.info("Initializing trainer...")
     trainer = Seq2SeqTrainer(
         model=model,
-        tokenizer=tokenizer,
+        processing_class=tokenizer,
         args=training_args,
         train_dataset=train,
         eval_dataset=test,
