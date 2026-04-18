@@ -4,7 +4,7 @@ from transformers import (
     AutoTokenizer,
     Seq2SeqTrainingArguments,
     Seq2SeqTrainer,
-    DataCollatorWithPadding,
+    DataCollatorForSeq2Seq,
 )
 from datasets import load_dataset, Dataset
 from configs import *
@@ -100,7 +100,7 @@ if __name__ == "__main__":
         args=training_args,
         train_dataset=train,
         eval_dataset=test,
-        data_collator=DataCollatorWithPadding(tokenizer=tokenizer),
+        data_collator=DataCollatorForSeq2Seq(tokenizer=tokenizer, model=model),
     )
 
     logger.info("Starting training...")
