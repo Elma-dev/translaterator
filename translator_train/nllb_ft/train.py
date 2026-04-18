@@ -89,7 +89,7 @@ if __name__ == "__main__":
         report_to="trackio",
         predict_with_generate=True,
         run_name=RUN_NAME,
-        save_steps=SAVE_STEPS,
+        # save_steps=SAVE_STEPS,
         save_total_limit=SAVE_TOTAL_LIMIT,
     )
 
@@ -104,6 +104,6 @@ if __name__ == "__main__":
     )
 
     logger.info("Starting training...")
-    trainer.train()
+    trainer.train(resume_from_checkpoint=RESUME_FROM_CHECKPOINT)
 
     logger.info("Training complete.")
